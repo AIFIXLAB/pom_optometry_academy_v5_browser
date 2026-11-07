@@ -1,0 +1,10 @@
+{
+  "name": "Pom Optometry Academy",
+  "short_name": "Pom Optometry",
+  "description": "Personal optometry exam preparation app",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#101b2b",
+  "theme_color": "#101b2b",
+  "lang": "th"
+}
