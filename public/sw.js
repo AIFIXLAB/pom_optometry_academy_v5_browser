@@ -1,4 +1,4 @@
-const CACHE = "pom-optometry-v5-shell-v1";
+const CACHE = "pom-optometry-v6-shell-v1";
 const SHELL = ["/", "/index.html", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

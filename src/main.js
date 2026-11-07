@@ -23,10 +23,12 @@ const fmtDate = (v) => new Date(v).toLocaleDateString("th-TH", { day:"numeric", 
 async function init() {
   try {
     state.questions = await storage.getAll("questions");
-    if (!state.questions.length) {
-      for (const q of starterQuestions) await storage.put("questions", q);
-      state.questions = await storage.getAll("questions");
+    // Safe bank migration: add missing V6 question IDs while preserving local progress.
+    const existingIds = new Set(state.questions.map(q => q.id));
+    for (const q of starterQuestions) {
+      if (!existingIds.has(q.id)) await storage.put("questions", q);
     }
+    state.questions = await storage.getAll("questions");
     state.attempts = await storage.getAll("attempts");
     state.sessions = await storage.getAll("sessions");
     const settings = await storage.get("settings", "main");
@@ -56,7 +58,7 @@ function render() {
   app.innerHTML = `
     <div class="shell">
       <aside class="sidebar">
-        <div class="brand"><div class="brand-mark">P</div><div><strong>Pom Optometry</strong><small>ACADEMY · V5</small></div></div>
+        <div class="brand"><div class="brand-mark">P</div><div><strong>Pom Optometry</strong><small>ACADEMY · V6</small></div></div>
         <div class="learner"><div class="avatar">P</div><div><b>Pom</b><small>Personal Exam Prep</small></div><span class="online-dot"></span></div>
         <nav>
           ${navItem("dashboard","ภาพรวม","⌂")}
@@ -70,7 +72,7 @@ function render() {
       <main class="main">
         <header class="topbar"><div><span class="eyebrow">OPTOMETRY LICENSING EXAM PREPARATION</span><h1>${pageTitle()}</h1></div><div class="top-actions"><span class="date">${new Date().toLocaleDateString("th-TH",{weekday:"short",day:"numeric",month:"long"})}</span><div class="avatar small">P</div></div></header>
         <section class="content">${pageContent({total,done,rate})}</section>
-        <footer>Pom Optometry Academy <span>·</span> V5.1 Browser Edition</footer>
+        <footer>Pom Optometry Academy <span>·</span> V6 Complete Practice Edition</footer>
       </main>
     </div>`;
   app.querySelectorAll("[data-page]").forEach(b => b.addEventListener("click", () => { state.page = b.dataset.page; state.currentQuiz = null; render(); }));
@@ -105,7 +107,7 @@ function dashboard({total,done,rate}) {
       <div class="panel"><div class="panel-head"><h3>หัวข้อในคลังข้อสอบ</h3><span class="muted">STARTER BANK</span></div>${topicCounts.map(x=>`<div class="topic-row"><span>${esc(x.t)}</span><div class="mini-track"><i style="width:${Math.max(8,x.n/Math.max(1,total)*100)}%"></i></div><b>${x.n}</b></div>`).join("")}</div>
       <div class="panel"><div class="panel-head"><h3>กิจกรรมล่าสุด</h3><span class="muted">RECENT</span></div>${recent.length ? recent.map(a=>`<div class="activity-row"><div class="activity-icon">${a.isCorrect?"✓":"×"}</div><div><b>${esc(a.topic||"แบบฝึกหัด")}</b><small>${fmtDate(a.createdAt)}</small></div><strong class="${a.isCorrect?"good":"bad"}">${a.isCorrect?"ถูก":"ทบทวน"}</strong></div>`).join("") : `<div class="empty-small">ยังไม่มีประวัติการฝึก เริ่มทำข้อสอบชุดแรกได้เลย</div>`}</div>
     </div>
-    <div class="notice"><span>✦</span><div><b>หมายเหตุเกี่ยวกับคลังข้อสอบ</b><p>ชุดเริ่มต้นเป็นข้อสอบฝึกที่สร้างเพื่อทบทวนหลักการ ไม่ใช่ข้อสอบจริงหรือข้อสอบย้อนหลังที่รับรองแล้ว ควรตรวจทานเฉลยกับตำราและอาจารย์ก่อนใช้เป็นแหล่งอ้างอิงสอบ</p></div></div>`;
+    <div class="notice"><span>✦</span><div><b>หมายเหตุเกี่ยวกับคลังข้อสอบ</b><p>คลัง 130 ข้อนี้เป็นข้อสอบฝึกที่สร้างขึ้นใหม่เพื่อทบทวนหลักการ ไม่ใช่ข้อสอบจริงหรือข้อสอบย้อนหลังที่รับรองแล้ว ควรตรวจทานเฉลยกับตำราและอาจารย์ก่อนใช้เป็นแหล่งอ้างอิงสอบ</p></div></div>`;
 }
 
 function statCard(label,value,unit,icon,color) {
@@ -115,7 +117,7 @@ function statCard(label,value,unit,icon,color) {
 function practice() {
   if (state.currentQuiz) return quizView();
   const filtered = state.questions.filter(q=>state.filter==="ทั้งหมด"||q.topic===state.filter);
-  return `<div class="page-intro"><div><h2>ฝึกทำข้อสอบตามหมวดวิชา</h2><p>อ่านโจทย์ภาษาอังกฤษควบคู่คำแปลไทย พร้อมเฉลยและคำอธิบายหลังตอบ</p></div><button class="btn primary" data-action="start-quiz">สุ่มชุดฝึก 10 ข้อ →</button></div>
+  return `<div class="page-intro"><div><h2>คลังข้อสอบฝึกครบ 13 หมวดวิชา</h2><p>อ่านโจทย์ภาษาอังกฤษควบคู่คำแปลไทย พร้อมเฉลยและคำอธิบายหลังตอบ</p></div><button class="btn primary" data-action="start-quiz">สุ่มชุดฝึก 20 ข้อ →</button></div>
     <div class="filter-row">${topics.map(t=>`<button class="chip ${state.filter===t?"selected":""}" data-filter="${esc(t)}">${esc(t)}</button>`).join("")}</div>
     <div class="question-list">${filtered.map((q,i)=>`<article class="question-card"><div class="q-meta"><span>${esc(q.topic)}</span><span>${esc(q.subtopic)}</span><span class="level">${esc(q.difficulty)}</span></div><h3>${i+1}. ${esc(q.question)}</h3><div class="q-options">${q.options.map((o,j)=>`<span>${String.fromCharCode(65+j)}. ${esc(o)}</span>`).join("")}</div><div class="q-foot"><span>รหัส ${q.id}</span><button class="text-btn" data-open-question="${q.id}">ฝึกข้อนี้ →</button></div></article>`).join("")}</div>`;
 }
@@ -166,7 +168,7 @@ function settingsPage() {
       <div class="panel"><div class="panel-head"><h3>พื้นที่จัดเก็บในเบราว์เซอร์</h3><span class="muted">INDEXEDDB</span></div><div class="storage-number" id="storage-number">กำลังตรวจสอบ…</div><div class="wide-track"><i id="storage-bar" style="width:0%"></i></div><p class="help-text" id="storage-detail">พื้นที่ที่ใช้และโควตาขึ้นกับเบราว์เซอร์ อุปกรณ์ และพื้นที่ว่าง ไม่ได้กำหนดตายตัวที่ 50 MB</p><button class="btn secondary" data-action="persist">ขอให้เบราว์เซอร์เก็บข้อมูลถาวร</button><p class="help-text" id="persist-status"></p></div>
       <div class="panel"><div class="panel-head"><h3>สำรองและกู้คืนข้อมูล</h3><span class="muted">BACKUP</span></div><p>ดาวน์โหลดไฟล์ JSON เพื่อเก็บไว้นอกอุปกรณ์ เช่น Google Drive, iCloud หรือแฟลชไดรฟ์</p><div class="backup-actions"><button class="btn primary" data-action="export">↓ ดาวน์โหลดไฟล์สำรอง</button><label class="btn secondary upload-label">↑ นำเข้าไฟล์สำรอง<input id="import-file" type="file" accept="application/json,.json" hidden></label></div><p class="help-text">การสำรองอัตโนมัติภายในแอปเป็นเพียง snapshot ในเบราว์เซอร์เดียวกัน ไม่ใช่ cloud backup และไม่ช่วยหากข้อมูลเบราว์เซอร์ถูกลบ</p><div id="backup-status" class="status-line"></div></div>
     </div>
-    <div class="panel"><div class="panel-head"><h3>การตั้งค่าแอป</h3><span class="muted">PREFERENCES</span></div><div class="setting-row"><div><b>ชื่อผู้เรียน</b><small>โปรไฟล์ในเครื่องนี้</small></div><input id="learner-name" value="${esc(state.settings.learner)}"></div><div class="setting-row"><div><b>ภาษา</b><small>แสดงโจทย์สองภาษาไทยและอังกฤษ</small></div><span class="tag">THAI + ENGLISH</span></div><div class="setting-row"><div><b>ข้อมูลเริ่มต้น</b><small>ชุดคำถามตัวอย่างสำหรับฝึกหลักการ</small></div><span class="tag">${state.questions.length} ข้อ</span></div><button class="btn secondary" data-action="save-settings">บันทึกการตั้งค่า</button></div>
+    <div class="panel"><div class="panel-head"><h3>การตั้งค่าแอป</h3><span class="muted">PREFERENCES</span></div><div class="setting-row"><div><b>ชื่อผู้เรียน</b><small>โปรไฟล์ในเครื่องนี้</small></div><input id="learner-name" value="${esc(state.settings.learner)}"></div><div class="setting-row"><div><b>ภาษา</b><small>แสดงโจทย์สองภาษาไทยและอังกฤษ</small></div><span class="tag">THAI + ENGLISH</span></div><div class="setting-row"><div><b>ข้อมูลเริ่มต้น</b><small>คลังข้อสอบฝึก 130 ข้อ</small></div><span class="tag">${state.questions.length} ข้อ</span></div><button class="btn secondary" data-action="save-settings">บันทึกการตั้งค่า</button></div>
     <div class="notice warning"><span>!</span><div><b>ข้อควรระวังสำคัญ</b><p>หากล้างข้อมูลเว็บไซต์ เปลี่ยนเบราว์เซอร์ เปลี่ยนอุปกรณ์ หรืออุปกรณ์เสีย ข้อมูลในเครื่องอาจหายได้ ควรดาวน์โหลดไฟล์สำรองเป็นระยะ โดยเฉพาะหลังเพิ่มข้อสอบหรือทำข้อสอบจำนวนมาก</p></div></div>`;
 }
 
@@ -190,7 +192,7 @@ function bindPageEvents() {
 }
 
 function startQuiz(ids) {
-  const pool=ids || state.questions.map(q=>q.id).sort(()=>Math.random()-.5).slice(0,Math.min(10,state.questions.length));
+  const pool=ids || state.questions.map(q=>q.id).sort(()=>Math.random()-.5).slice(0,Math.min(20,state.questions.length));
   state.currentQuiz={ids:pool,index:0,correct:0};
   state.selected=null; state.feedback=null; state.page="practice"; render();
 }

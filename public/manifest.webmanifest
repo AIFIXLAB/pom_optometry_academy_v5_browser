@@ -1,7 +1,7 @@
 {
-  "name": "Pom Optometry Academy",
+  "name": "Pom Optometry Academy V6",
   "short_name": "Pom Optometry",
-  "description": "Personal optometry exam preparation app",
+  "description": "Bilingual optometry exam preparation and practice bank",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#101b2b",

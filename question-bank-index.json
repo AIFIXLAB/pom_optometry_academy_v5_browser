@@ -1,0 +1,21 @@
+{
+  "version": "6.0",
+  "question_count": 130,
+  "topic_count": 13,
+  "topics": {
+    "Geometric Optics": 10,
+    "Clinical Refraction": 10,
+    "Binocular Vision & Orthoptics": 10,
+    "Ocular Anatomy & Physiology": 10,
+    "Ocular Disease & Red Eye": 10,
+    "Contact Lens": 10,
+    "Paediatric Optometry & Myopia": 10,
+    "Low Vision & Visual Rehabilitation": 10,
+    "Ocular Pharmacology": 10,
+    "Visual Perception & Neuro-Optometry": 10,
+    "Dispensing Optics & Ophthalmic Lenses": 10,
+    "Clinical Procedures & Instrumentation": 10,
+    "Professional Practice, Ethics & Patient Safety": 10
+  },
+  "note": "Original bilingual practice questions; not official past-paper questions."
+}
